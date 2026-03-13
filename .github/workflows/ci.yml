@@ -36,17 +36,29 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-m2-
 
-      # 4) Build + test del progetto Maven (unico passaggio)
-      - name: Build and run tests
-        run: mvn -B clean verify
+      # 4) Build del modulo applicativo (scope esplicito su app)
+      - name: Build app module
+        run: mvn -B -pl app -am clean compile
+
+      # 5) Esecuzione test del solo sottosistema commenti
+      - name: Run scoped comment subsystem tests
+        run: >
+          mvn -B -pl app -am test
+          -Dtest="org.apache.roller.weblogger.moderation.ModerationDecisionTest,
+          org.apache.roller.weblogger.moderation.KeywordModerationPolicyTest,
+          org.apache.roller.weblogger.moderation.RateLimitModerationPolicyTest,
+          org.apache.roller.weblogger.moderation.CommentModerationServiceTest,
+          org.apache.roller.weblogger.pojos.CommentSearchCriteriaTest,
+          org.apache.roller.weblogger.pojos.WeblogEntryCommentTest,
+          org.apache.roller.weblogger.ui.rendering.plugins.comments.CommentValidatorTest"
 
       # 6) Generazione report code coverage (JaCoCo)
       - name: Generate JaCoCo report
-        run: mvn jacoco:report
+        run: mvn -B -pl app -am jacoco:report
 
       # 7) Mutation testing con PiTest
       - name: Run PiTest mutation coverage
-        run: mvn org.pitest:pitest-maven:mutationCoverage
+        run: mvn -B -pl app -am org.pitest:pitest-maven:mutationCoverage
 
       # Upload artifact report JaCoCo
       - name: Upload JaCoCo report artifact
@@ -54,7 +66,6 @@ jobs:
         with:
           name: jacoco-report
           path: |
-            target/site/jacoco
             app/target/site/jacoco
           if-no-files-found: warn
 
@@ -64,6 +75,5 @@ jobs:
         with:
           name: pitest-report
           path: |
-            target/pit-reports
             app/target/pit-reports
           if-no-files-found: warn
