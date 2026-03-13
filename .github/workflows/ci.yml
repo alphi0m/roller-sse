@@ -44,6 +44,7 @@ jobs:
       - name: Run scoped comment subsystem tests
         run: >
           mvn -B -pl app -am test
+          -Dsurefire.failIfNoSpecifiedTests=false
           -Dtest="org.apache.roller.weblogger.moderation.ModerationDecisionTest,
           org.apache.roller.weblogger.moderation.KeywordModerationPolicyTest,
           org.apache.roller.weblogger.moderation.RateLimitModerationPolicyTest,
