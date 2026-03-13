@@ -22,6 +22,10 @@ import org.apache.roller.weblogger.pojos.WeblogEntryComment.ApprovalStatus;
 
 public class CommentSearchCriteria {
 
+        /*@ public invariant offset >= 0;
+            @ public invariant maxResults >= -1;
+            @*/
+
     // Weblog or null to get comments on all blogs
     private Weblog weblog;
     // Entry or null to include all comments
@@ -35,10 +39,13 @@ public class CommentSearchCriteria {
     // Comment status as defined in WeblogEntryComment, or null for any
     private ApprovalStatus status;
     // True for results in reverse chrono order
+    //@ spec_public
     private boolean reverseChrono = false;
     // Offset into results for paging
+    //@ spec_public
     private int offset = 0;
     // Max comments to return (or -1 for no limit)
+    //@ spec_public
     private int maxResults = -1;
 
     public Weblog getWeblog() {
@@ -89,26 +96,54 @@ public class CommentSearchCriteria {
         this.status = status;
     }
 
+    /*@ public normal_behavior
+      @   ensures \result == reverseChrono;
+      @ pure
+      @*/
     public boolean isReverseChrono() {
         return reverseChrono;
     }
 
+    /*@ public normal_behavior
+      @   assignable this.reverseChrono;
+      @   ensures this.reverseChrono == reverseChrono;
+      @*/
     public void setReverseChrono(boolean reverseChrono) {
         this.reverseChrono = reverseChrono;
     }
 
+    /*@ public normal_behavior
+      @   ensures \result == offset;
+      @   ensures \result >= 0;
+      @ pure
+      @*/
     public int getOffset() {
         return offset;
     }
 
+    /*@ public normal_behavior
+      @   requires offset >= 0;
+      @   assignable this.offset;
+      @   ensures this.offset == offset;
+      @*/
     public void setOffset(int offset) {
         this.offset = offset;
     }
 
+    /*@ public normal_behavior
+      @   ensures \result == maxResults;
+      @   ensures \result >= -1;
+      @ pure
+      @*/
     public int getMaxResults() {
         return maxResults;
     }
 
+    /*@ public normal_behavior
+      @   requires maxResults >= -1;
+      @   assignable this.maxResults;
+      @   ensures this.maxResults == maxResults;
+      @*/
     public void setMaxResults(int maxResults) {
         this.maxResults = maxResults;
     }

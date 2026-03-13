@@ -29,28 +29,39 @@ import org.apache.roller.util.UUIDGenerator;
  * WeblogEntry comment bean.
  */
 public class WeblogEntryComment implements Serializable {
-    
+
     public static final long serialVersionUID = -6668122596726478462L;
     
     // approval status states
     public enum ApprovalStatus {APPROVED, DISAPPROVED, SPAM, PENDING}
 
     // attributes
+    //@ spec_public
     private String    id = UUIDGenerator.generateUUID();
+    //@ spec_public
     private String    name = null;
+    //@ spec_public
     private String    email = null;
+    //@ spec_public
     private String    url = null;
+    //@ spec_public
     private String    content = null;
+    //@ spec_public
     private Timestamp postTime = null;
+    //@ spec_public
     private ApprovalStatus status = ApprovalStatus.APPROVED;
+    //@ spec_public
     private Boolean   notify = Boolean.FALSE;
+    //@ spec_public
     private String    remoteHost = null;
     private String    referrer = null;
     private String    userAgent = null;
     private String    plugins = null;
+    //@ spec_public
     private String    contentType = "text/plain";
 
     // associations
+    //@ spec_public
     private WeblogEntry weblogEntry = null;
     
     
@@ -60,6 +71,10 @@ public class WeblogEntryComment implements Serializable {
     /**
      * Database ID of comment 
      */
+        /*@ public normal_behavior
+            @   ensures \result == id;
+            @ pure
+            @*/
     public String getId() {
         return this.id;
     }
@@ -75,6 +90,10 @@ public class WeblogEntryComment implements Serializable {
     /**
      * Weblog entry associated with comment.
      */
+        /*@ public normal_behavior
+            @   ensures \result == weblogEntry;
+            @ pure
+            @*/
     public WeblogEntry getWeblogEntry() {
         return weblogEntry;
     }
@@ -90,6 +109,10 @@ public class WeblogEntryComment implements Serializable {
     /**
      * Name of person who wrote comment.
      */
+    /*@ public normal_behavior
+      @   ensures \result == name;
+      @ pure
+      @*/
     public String getName() {
         return this.name;
     }
@@ -97,6 +120,10 @@ public class WeblogEntryComment implements Serializable {
     /**
      * Name of person who wrote comment.
      */
+    /*@ public normal_behavior
+      @   assignable this.name;
+      @   ensures this.name == name;
+      @*/
     public void setName(String name) {
         this.name = name;
     }
@@ -105,6 +132,10 @@ public class WeblogEntryComment implements Serializable {
     /**
      * Email of person who wrote comment.
      */
+        /*@ public normal_behavior
+            @   ensures \result == email;
+            @ pure
+            @*/
     public String getEmail() {
         return this.email;
     }
@@ -120,6 +151,10 @@ public class WeblogEntryComment implements Serializable {
     /**
      * URL of person who wrote comment.
      */
+        /*@ public normal_behavior
+            @   ensures \result == url;
+            @ pure
+            @*/
     public String getUrl() {
         return this.url;
     }
@@ -135,6 +170,10 @@ public class WeblogEntryComment implements Serializable {
     /**
      * Content of comment.
      */
+    /*@ public normal_behavior
+      @   ensures \result == content;
+      @ pure
+      @*/
     public String getContent() {
         return this.content;
     }
@@ -142,6 +181,10 @@ public class WeblogEntryComment implements Serializable {
     /**
      * Content of comment.
      */
+    /*@ public normal_behavior
+      @   assignable this.content;
+      @   ensures this.content == content;
+      @*/
     public void setContent(String content) {
         this.content = content;
     }
@@ -150,6 +193,10 @@ public class WeblogEntryComment implements Serializable {
     /**
      * Time that comment was posted.
      */
+        /*@ public normal_behavior
+            @   ensures \result == postTime;
+            @ pure
+            @*/
     public Timestamp getPostTime() {
         return this.postTime;
     }
@@ -165,6 +212,11 @@ public class WeblogEntryComment implements Serializable {
     /**
      * Status of the comment, i.e. APPROVED, SPAM, PENDING, etc.
      */
+    /*@ public normal_behavior
+      @   ensures \result != null;
+      @   ensures \result == status;
+      @ pure
+      @*/
     public ApprovalStatus getStatus() {
         return status;
     }
@@ -172,6 +224,11 @@ public class WeblogEntryComment implements Serializable {
     /**
      * Status of the comment, i.e. APPROVED, SPAM, PENDING, etc.
      */
+    /*@ public normal_behavior
+      @   requires status != null;
+      @   assignable this.status;
+      @   ensures this.status == status;
+      @*/
     public void setStatus(ApprovalStatus status) {
         this.status = status;
     }
@@ -197,6 +254,10 @@ public class WeblogEntryComment implements Serializable {
     /**
      * Host name or IP of person who wrote comment.
      */
+    /*@ public normal_behavior
+      @   ensures \result == remoteHost;
+      @ pure
+      @*/
     public String getRemoteHost() {
         return this.remoteHost;
     }
@@ -204,6 +265,10 @@ public class WeblogEntryComment implements Serializable {
     /**
      * Host name or IP of person who wrote comment.
      */
+    /*@ public normal_behavior
+      @   assignable this.remoteHost;
+      @   ensures this.remoteHost == remoteHost;
+      @*/
     public void setRemoteHost(String remoteHost) {
         this.remoteHost = remoteHost;
     }
@@ -273,7 +338,7 @@ public class WeblogEntryComment implements Serializable {
      * Indicates that weblog owner considers this comment to be spam.
      */
     public Boolean getSpam() {
-        return ApprovalStatus.SPAM.equals(getStatus());
+        return getStatus() == ApprovalStatus.SPAM;
     }
     
     
@@ -281,7 +346,7 @@ public class WeblogEntryComment implements Serializable {
      * True if comment has is pending moderator approval.
      */
     public Boolean getPending() {
-        return ApprovalStatus.PENDING.equals(getStatus());
+        return getStatus() == ApprovalStatus.PENDING;
     }
     
     
@@ -289,7 +354,7 @@ public class WeblogEntryComment implements Serializable {
      * Indicates that comment has been approved for display on weblog.
      */
     public Boolean getApproved() {
-        return ApprovalStatus.APPROVED.equals(getStatus());
+        return getStatus() == ApprovalStatus.APPROVED;
     }
     
     

@@ -592,6 +592,20 @@ limitations under the License.
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.openjdk.jmh</groupId>
+            <artifactId>jmh-core</artifactId>
+            <version>1.37</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.openjdk.jmh</groupId>
+            <artifactId>jmh-generator-annprocess</artifactId>
+            <version>1.37</version>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -722,6 +736,20 @@ limitations under the License.
             </plugin>
 
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <testAnnotationProcessorPaths>
+                        <path>
+                            <groupId>org.openjdk.jmh</groupId>
+                            <artifactId>jmh-generator-annprocess</artifactId>
+                            <version>1.37</version>
+                        </path>
+                    </testAnnotationProcessorPaths>
+                </configuration>
+            </plugin>
+
+            <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${maven-surefire.version}</version>
                 <configuration>
@@ -807,6 +835,69 @@ limitations under the License.
                 <configuration>
                     <doUpdate>false</doUpdate>
                     <revisionOnScmFailure>UNKNOWN</revisionOnScmFailure>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.12</version>
+                <executions>
+                    <execution>
+                        <id>jacoco-prepare-agent</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>jacoco-report</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.reporting.outputDirectory}/jacoco</outputDirectory>
+                            <includes>
+                                <include>org/apache/roller/weblogger/moderation/**</include>
+                                <include>org/apache/roller/weblogger/pojos/WeblogEntryComment*</include>
+                                <include>org/apache/roller/weblogger/pojos/CommentSearchCriteria*</include>
+                                <include>org/apache/roller/weblogger/ui/rendering/plugins/comments/CommentValidator*</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.pitest</groupId>
+                <artifactId>pitest-maven</artifactId>
+                <version>1.15.8</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.pitest</groupId>
+                        <artifactId>pitest-junit5-plugin</artifactId>
+                        <version>1.2.1</version>
+                    </dependency>
+                </dependencies>
+                <configuration>
+                    <testPlugin>junit5</testPlugin>
+                    <targetClasses>
+                        <param>org.apache.roller.weblogger.moderation.*</param>
+                        <param>org.apache.roller.weblogger.pojos.WeblogEntryComment</param>
+                        <param>org.apache.roller.weblogger.pojos.CommentSearchCriteria</param>
+                        <param>org.apache.roller.weblogger.ui.rendering.plugins.comments.CommentValidator</param>
+                    </targetClasses>
+                    <targetTests>
+                        <param>org.apache.roller.weblogger.moderation.*Test</param>
+                        <param>org.apache.roller.weblogger.pojos.WeblogEntryCommentTest</param>
+                        <param>org.apache.roller.weblogger.pojos.CommentSearchCriteriaTest</param>
+                        <param>org.apache.roller.weblogger.ui.rendering.plugins.comments.CommentValidatorTest</param>
+                    </targetTests>
+                    <outputFormats>
+                        <param>HTML</param>
+                        <param>XML</param>
+                    </outputFormats>
+                    <timestampedReports>false</timestampedReports>
                 </configuration>
             </plugin>
 

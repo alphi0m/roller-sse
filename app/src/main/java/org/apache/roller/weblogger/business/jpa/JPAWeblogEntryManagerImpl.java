@@ -32,6 +32,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.roller.util.RollerConstants;
 import org.apache.roller.weblogger.WebloggerException;
 import org.apache.roller.weblogger.business.Weblogger;
+import org.apache.roller.weblogger.moderation.CommentModerationService;
 import org.apache.roller.weblogger.pojos.CommentSearchCriteria;
 import org.apache.roller.weblogger.pojos.WeblogEntryComment;
 import org.apache.roller.weblogger.pojos.WeblogEntryComment.ApprovalStatus;
@@ -157,6 +158,9 @@ public class JPAWeblogEntryManagerImpl implements WeblogEntryManager {
      */
     @Override
     public void saveComment(WeblogEntryComment comment) throws WebloggerException {
+        // Apply moderation policies before persisting.
+        CommentModerationService.getDefault().screen(comment);
+
         this.strategy.store(comment);
         
         // update weblog last modified date.  date updated by saveWebsite()

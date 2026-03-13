@@ -1,0 +1,69 @@
+name: CI Pipeline
+
+on:
+  # Esegue la pipeline su push al branch principale
+  push:
+    branches:
+      - baseline
+  # Esegue la pipeline su pull request verso il branch principale
+  pull_request:
+    branches:
+      - baseline
+
+jobs:
+  build-test-quality:
+    # Ambiente di esecuzione richiesto
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1) Checkout del repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2) Setup Java 21 (Temurin)
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      # 3) Cache delle dipendenze Maven (~/.m2)
+      - name: Cache Maven dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-m2-
+
+      # 4) Build + test del progetto Maven (unico passaggio)
+      - name: Build and run tests
+        run: mvn -B clean verify
+
+      # 6) Generazione report code coverage (JaCoCo)
+      - name: Generate JaCoCo report
+        run: mvn jacoco:report
+
+      # 7) Mutation testing con PiTest
+      - name: Run PiTest mutation coverage
+        run: mvn org.pitest:pitest-maven:mutationCoverage
+
+      # Upload artifact report JaCoCo
+      - name: Upload JaCoCo report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-report
+          path: |
+            target/site/jacoco
+            app/target/site/jacoco
+          if-no-files-found: warn
+
+      # Upload artifact report PiTest
+      - name: Upload PiTest report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pitest-report
+          path: |
+            target/pit-reports
+            app/target/pit-reports
+          if-no-files-found: warn
