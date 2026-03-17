@@ -61,6 +61,31 @@ jobs:
       - name: Run PiTest mutation coverage
         run: mvn -B -pl app org.pitest:pitest-maven:mutationCoverage
 
+      # 8) Snyk: dependency vulnerability scan
+      #    continue-on-error=true perché Apache Roller legacy può contenere CVE
+      #    non afferenti al sottosistema sviluppato; lo step produce comunque output
+      #    utile per la relazione senza bloccare l'intera pipeline.
+      - name: Snyk dependency vulnerability scan
+        uses: snyk/actions/maven@master
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --file=app/pom.xml --severity-threshold=high
+
+      # 9) SonarCloud: analisi qualità + coverage
+      - name: SonarCloud analysis
+        working-directory: app
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: >
+          mvn -B org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
+          -Dsonar.host.url=https://sonarcloud.io
+          -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}
+          -Dsonar.organization=${{ secrets.SONAR_ORGANIZATION }}
+          -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
+
       # Upload artifact report JaCoCo
       - name: Upload JaCoCo report artifact
         uses: actions/upload-artifact@v4
