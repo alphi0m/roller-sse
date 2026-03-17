@@ -55,11 +55,11 @@ jobs:
 
       # 6) Generazione report code coverage (JaCoCo)
       - name: Generate JaCoCo report
-        run: mvn -B -pl app -am jacoco:report
+        run: mvn -B -pl app -am org.jacoco:jacoco-maven-plugin:report -Dsurefire.failIfNoSpecifiedTests=false
 
       # 7) Mutation testing con PiTest
       - name: Run PiTest mutation coverage
-        run: mvn -B -pl app -am org.pitest:pitest-maven:mutationCoverage
+        run: mvn -B -pl app org.pitest:pitest-maven:mutationCoverage
 
       # Upload artifact report JaCoCo
       - name: Upload JaCoCo report artifact
