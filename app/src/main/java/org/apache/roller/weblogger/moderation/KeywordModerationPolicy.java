@@ -19,10 +19,12 @@
 package org.apache.roller.weblogger.moderation;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.roller.weblogger.pojos.WeblogEntryComment;
 
 /**
@@ -47,9 +49,9 @@ public class KeywordModerationPolicy implements ModerationPolicy {
             @*/
 
     //@ spec_public
-    private final List<String> spamKeywords;
+    private final Set<String> spamKeywords;
     //@ spec_public
-    private final List<String> pendingKeywords;
+    private final Set<String> pendingKeywords;
 
     // ---------------------------------------------------------------- constructors
 
@@ -64,8 +66,8 @@ public class KeywordModerationPolicy implements ModerationPolicy {
       @   ensures this.pendingKeywords != null;
       @*/
     public KeywordModerationPolicy(List<String> spamKeywords, List<String> pendingKeywords) {
-        this.spamKeywords    = spamKeywords    != null ? spamKeywords    : Collections.emptyList();
-        this.pendingKeywords = pendingKeywords != null ? pendingKeywords : Collections.emptyList();
+        this.spamKeywords    = convertToLowerCaseSet(spamKeywords);
+        this.pendingKeywords = convertToLowerCaseSet(pendingKeywords);
     }
 
     /**
@@ -91,17 +93,23 @@ public class KeywordModerationPolicy implements ModerationPolicy {
             @*/
     @Override
     public ModerationDecision evaluate(WeblogEntryComment comment) {
-        String searchText = buildSearchText(comment);
+        // Early exit: if no keywords are configured, approve immediately
+        if (spamKeywords.isEmpty() && pendingKeywords.isEmpty()) {
+            return ModerationDecision.approve();
+        }
 
-        for (String keyword : spamKeywords) {
-            if (keyword != null && !keyword.isEmpty() && StringUtils.containsIgnoreCase(searchText, keyword)) {
-                return ModerationDecision.spam("contains spam keyword: " + keyword);
+        String searchText = buildSearchText(comment).toLowerCase();
+        String[] tokens = searchText.split("\\W+");
+
+        for (String token : tokens) {
+            if (!token.isEmpty() && spamKeywords.contains(token)) {
+                return ModerationDecision.spam("contains spam keyword: " + token);
             }
         }
 
-        for (String keyword : pendingKeywords) {
-            if (keyword != null && !keyword.isEmpty() && StringUtils.containsIgnoreCase(searchText, keyword)) {
-                return ModerationDecision.pending("contains flagged keyword: " + keyword);
+        for (String token : tokens) {
+            if (!token.isEmpty() && pendingKeywords.contains(token)) {
+                return ModerationDecision.pending("contains flagged keyword: " + token);
             }
         }
 
@@ -129,6 +137,23 @@ public class KeywordModerationPolicy implements ModerationPolicy {
             sb.append(url).append(' ');
         }
         return sb.toString();
+    }
+
+    /**
+     * Converts a collection of keywords to a lowercase, unmodifiable {@link Set},
+     * filtering out null and blank entries.
+     */
+    private static Set<String> convertToLowerCaseSet(Collection<String> keywords) {
+        if (keywords == null || keywords.isEmpty()) {
+            return Collections.emptySet();
+        }
+        Set<String> result = new HashSet<>();
+        for (String kw : keywords) {
+            if (kw != null && !kw.isBlank()) {
+                result.add(kw.toLowerCase().trim());
+            }
+        }
+        return Collections.unmodifiableSet(result);
     }
 
     private static List<String> parseKeywords(String csv) {
