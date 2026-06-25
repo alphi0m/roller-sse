@@ -100,7 +100,7 @@ class KeywordModerationPolicyTest {
 
     @Test
     void spamKeywordInName_isSpam() {
-        KeywordModerationPolicy policy = new KeywordModerationPolicy("spammer", "");
+        KeywordModerationPolicy policy = new KeywordModerationPolicy("spammer123", "");
         assertEquals(ModerationDecision.Verdict.SPAM,
                 policy.evaluate(commentWithName("spammer123")).getVerdict());
     }
