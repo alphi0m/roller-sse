@@ -24,6 +24,37 @@
    metadata-complete="true"
    version="2.5"> 
 
+  <!-- ==================================================================== -->
+  <!-- HTTP/2 Support                                                       -->
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  -->
+  <!-- HTTP/2 is a server-level connector configuration and must be enabled  -->
+  <!-- in jetty.xml or via command-line modules (e.g. --module=http2).       -->
+  <!-- It cannot be configured in web.xml / webdefault.xml.                 -->
+  <!-- To enable: add the http2 module to your Jetty base and configure     -->
+  <!-- the ALPN connector in jetty-ssl.xml.                                 -->
+  <!-- ==================================================================== -->
+
+  <!-- ==================================================================== -->
+  <!-- Gzip Filter                                                          -->
+  <!-- Compresses HTTP responses to reduce bandwidth and improve latency.   -->
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  -->
+  <filter>
+    <filter-name>GzipFilter</filter-name>
+    <filter-class>org.eclipse.jetty.servlets.GzipFilter</filter-class>
+    <init-param>
+      <param-name>minGzipSize</param-name>
+      <param-value>256</param-value>
+    </init-param>
+    <init-param>
+      <param-name>mimeTypes</param-name>
+      <param-value>text/html,text/plain,text/xml,text/css,application/javascript,application/json</param-value>
+    </init-param>
+  </filter>
+  <filter-mapping>
+    <filter-name>GzipFilter</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
+
   <description>
     Default web.xml file.  
     This file is applied to a Web application before it's own WEB_INF/web.xml file
@@ -145,12 +176,10 @@
       <param-name>useFileMappedBuffer</param-name>
       <param-value>true</param-value>
     </init-param>  
-    <!--
     <init-param>
       <param-name>cacheControl</param-name>
-      <param-value>max-age=3600,public</param-value>
+      <param-value>max-age=31536000,public</param-value>
     </init-param>
-    -->
     <load-on-startup>0</load-on-startup>
   </servlet> 
 
