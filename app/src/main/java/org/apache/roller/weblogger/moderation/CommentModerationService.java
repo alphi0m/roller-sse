@@ -22,8 +22,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.roller.weblogger.pojos.WeblogEntryComment;
 import org.apache.roller.weblogger.pojos.WeblogEntryComment.ApprovalStatus;
 
@@ -57,7 +57,7 @@ public class CommentModerationService {
             @ public invariant !policies.isEmpty();
             @*/
 
-    private static final Log log = LogFactory.getLog(CommentModerationService.class);
+    private static final Logger log = LoggerFactory.getLogger(CommentModerationService.class);
 
     // Common spam keywords bundled with the default instance.
     private static final String DEFAULT_SPAM_KEYWORDS =
@@ -145,8 +145,8 @@ public class CommentModerationService {
             ModerationDecision decision = policy.evaluate(comment);
 
             if (decision.getVerdict() == ModerationDecision.Verdict.SPAM) {
-                log.debug("Comment rejected as SPAM by " + policy.getClass().getSimpleName()
-                        + ": " + decision.getReason());
+                log.debug("Comment rejected as SPAM by {} : {}",
+                        policy.getClass().getSimpleName(), decision.getReason());
                 return decision;  // short-circuit – can't get worse than SPAM
             }
 
@@ -174,20 +174,23 @@ public class CommentModerationService {
       @*/
     public ModerationDecision screen(WeblogEntryComment comment) {
         ModerationDecision decision = evaluate(comment);
+        String commentId = comment.getId() != null ? comment.getId() : "unknown";
 
         switch (decision.getVerdict()) {
             case SPAM:
                 comment.setStatus(ApprovalStatus.SPAM);
-                log.info("Comment from " + comment.getRemoteHost()
-                        + " marked as SPAM: " + decision.getReason());
+                log.warn("Moderation decision for comment [{}]: SPAM \u2014 reason: {}",
+                        commentId, decision.getReason());
                 break;
             case PENDING:
                 comment.setStatus(ApprovalStatus.PENDING);
-                log.debug("Comment from " + comment.getRemoteHost()
-                        + " held for review: " + decision.getReason());
+                log.info("Moderation decision for comment [{}]: PENDING \u2014 reason: {}",
+                        commentId, decision.getReason());
                 break;
             case APPROVE:
             default:
+                log.info("Moderation decision for comment [{}]: APPROVE \u2014 reason: {}",
+                        commentId, "no policy triggered");
                 // Leave the status as set by the caller.
                 break;
         }
