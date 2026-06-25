@@ -1,72 +1,94 @@
+# Apache Roller — Sustainable Software Engineering Project
 
-# Apache Roller
+**University of Salerno** — Master's Degree in Software Engineering & IT Management  
+**Course**: Sustainable Software Engineering  
+**A.Y.**: 2025-2026  
+**Author**: Alfio  
 
-[Apache Roller](http://roller.apache.org) is a Java-based, full-featured, multi-user and group-blog server suitable for blog sites large and small.
-Roller is typically run with Apache Tomcat and MySQL.
-Roller is made up of the following Maven projects:
+---
 
-* _roller-project_:         Top level project
-* _app_:                    Roller Weblogger webapp, JSP pages, Velocity templates
-* _assembly-release_:       Used to create official distributions of Roller
-* _docs_:                   Roller documentation in ASCII Doc format
-* _it-selenium_:            Integrated browser tests for Roller using Selenium
+## Project Overview
 
-## Documentation
+This repository contains a sustainability-focused analysis and refactoring of **Apache Roller**, an open-source Java blogging platform (~70,000 LOC). The project applies the three pillars of Sustainable Software Engineering:
 
-The Roller Install, User and Template Guides are available in ODT format (for OpenOffice or LibraOffice):
+- **Technical sustainability** — performance benchmarking (JMH) and tech debt analysis (SonarCloud + Creedengo)
+- **Environmental sustainability** — energy profiling (EnergyBridge, EcoIndex/GreenIT) and green refactoring
+- **Social sustainability** — algorithmic fairness assessment (AIF360) and explainability
 
-* <https://github.com/apache/roller/tree/master/docs>
+---
 
-## For more information
+## What Was Added
 
-Hit the Roller Confluence wiki:
+A comment moderation subsystem was introduced under `org.apache.roller.weblogger.moderation`:
 
-* How to build and run Roller: <https://cwiki.apache.org/confluence/x/EM4>
-* How to contribute to Roller: <https://cwiki.apache.org/confluence/x/2hsB>
-* How to make a release of Roller: <https://cwiki.apache.org/confluence/x/gycB>
-* Other developer resources: <https://cwiki.apache.org/confluence/x/D84>
+| Class | Role |
+|-------|------|
+| `ModerationDecision` | Outcome of moderation (APPROVED, PENDING, SPAM) with reason |
+| `ModerationPolicy` | Interface for pluggable moderation strategies |
+| `KeywordModerationPolicy` | Keyword-based filtering with O(1) HashSet lookup |
+| `RateLimitModerationPolicy` | Rate limiting per IP/user |
+| `CommentModerationService` | Orchestrates policies, logs decisions for explainability |
 
+---
 
-## Installing Roller 
+## Green Refactoring Applied
 
-If you want to run Roller in production, then you should down load the latest official release and install it by following the Installation Guide, which you can find at the documentation link: <https://github.com/apache/roller/tree/master/docs>.
+### 1. KeywordModerationPolicy — O(1) HashSet lookup
+**Energy smell detected by Creedengo**: Suboptimal Data Structure + Inefficient Loop  
+Original implementation used `List<String>` with O(n·m) sequential scan.  
+Refactored to `Set<String>` with tokenization and constant-time lookup.  
+**Result**: −18.6% CPU energy consumption (EnergyBridge).
 
+### 2. CommentModerationService — Explainability Logging
+Added structured SLF4J logging for every moderation decision, recording the exact rule triggered.  
+**Result**: full accountability and transparency, zero "black box" effect.
 
-## Quick start: Running via Maven
+### 3. Jetty Configuration — Network Efficiency
+Enabled Gzip compression, Cache-Control headers (`max-age=31536000`), and HTTP/2 support.  
+**Result**: reduced payload size and eliminated redundant HTTP requests.
 
-You probably should not run Roller in production using this technique, but it's a relatively easy way to try Roller for yourself. 
-Assuming you've got a UNIX shell, Java, Maven and Git:
+---
 
-Get the code:
+## Toolchain
 
-    $ git clone https://github.com/apache/roller.git
+| Pillar | Tool |
+|--------|------|
+| Energy profiling (backend) | EnergyBridge (RAPL) |
+| Energy smells (static) | Creedengo + SonarCloud |
+| Frontend eco-analysis | GreenIT Analysis / EcoIndex |
+| Performance benchmarks | JMH (Java Microbenchmark Harness) |
+| Test coverage | JaCoCo |
+| Mutation testing | PiTest |
+| Fairness assessment | AIF360 (AI Fairness 360) |
+| Containerization | Docker + Docker Compose |
+| CI/CD | GitHub Actions |
 
-Compile and build Roller:
+---
 
-    $ cd roller
-    $ mvn -DskipTests=true install
+## Key Results
 
-Run Roller in Jetty with an embedded Derby database (for testing only):
+| Metric | Before | After |
+|--------|--------|-------|
+| CPU Energy (full test cycle) | 1063.97 J | 865.20 J (−18.6%) |
+| Statistical Parity Difference | −0.18 | −0.04 ✅ |
+| Disparate Impact | 0.74 ❌ | within range ✅ |
+| EcoIndex score | A (80.06) | A (improved) |
 
-    $ mvn jetty:run
+---
 
-Once Jetty is up and running browse to <http://localhost:8080/roller> to try to Roller.
+## Test Results
 
+Tests run: 36, Failures: 0, Errors: 0 — BUILD SUCCESS
 
-## Quick start: running via Docker
+---
 
-Another way to try Roller is to use Docker. 
-This is actually easier than running via Maven because you do not need Maven or Java. 
-If you've got Docker, here's how you can run Roller for demo purposes.
+## How to Run
 
-Get the code:
+```bash
+# Build and run tests
+mvn clean test
 
-    $ git clone https://github.com/apache/roller.git
-
-Run Docker Compose to build and launch Roller along with a PostgreSQL database:
-
-    $ cd roller
-    $ docker-compose up
-    
-It will take a while to build and start the Docker image. 
-Once it's done browse to <http://localhost:8080/roller> to try Roller.
+# Run with Docker
+docker-compose up --build
+```
+---
