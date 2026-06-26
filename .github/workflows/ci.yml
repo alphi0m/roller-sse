@@ -5,10 +5,12 @@ on:
   push:
     branches:
       - baseline
+      - main
   # Esegue la pipeline su pull request verso il branch principale
   pull_request:
     branches:
       - baseline
+      - main
 
 jobs:
   build-test-quality:
